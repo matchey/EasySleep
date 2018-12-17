@@ -14,6 +14,7 @@ import android.support.annotation.Nullable;
 //import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.View.OnTouchListener;
 //import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.MotionEvent;
 import android.view.View;
@@ -26,7 +27,7 @@ import java.util.TreeMap;
 
 import static com.example.matchey.easysleep.MainActivity.TAG;
 
-public class MainService extends Service implements View.OnTouchListener//, OnDoubleTapListener
+public class MainService extends Service// implements View.OnTouchListener//, OnDoubleTapListener
 {
     private View mView;
 
@@ -59,17 +60,25 @@ public class MainService extends Service implements View.OnTouchListener//, OnDo
                 | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.OPAQUE);
 
+        gestureDetector = new GestureDetector(this, onGestureListener);
+        gestureDetector.setOnDoubleTapListener(onGestureListener);
+
         mView = new View(this);
-        mView.setOnTouchListener(this);
+//        mView.setOnTouchListener(this);
+        mView.setOnTouchListener(new OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event){
+//                Log.d(TAG, "onTouch event: " + event);
+//                gestureDetector.onTouchEvent(event);
+//                return true;
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
 
         wm.addView(mView, params);
 
         mDevicePolicyManager = (DevicePolicyManager)getSystemService(Context.DEVICE_POLICY_SERVICE);
         mComponentName = new ComponentName(this, Admin.class);
-
-//        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener());
-        gestureDetector = new GestureDetector(this, onGestureListener);
-        gestureDetector.setOnDoubleTapListener(onGestureListener);
 
         return START_STICKY;
     }
@@ -88,7 +97,7 @@ public class MainService extends Service implements View.OnTouchListener//, OnDo
     @Override
     public boolean onDoubleTap(MotionEvent e)
     {
-        Log.d(TAG, "event: " + e);
+        Log.d(TAG, "onDoubleTap: " + e);
 
         if(e.getAction() != MotionEvent.ACTION_OUTSIDE){
             return false;
@@ -111,25 +120,30 @@ public class MainService extends Service implements View.OnTouchListener//, OnDo
             Toast.makeText(getApplicationContext(), "Launch from " + packageName, Toast.LENGTH_SHORT).show();
         }
 
-        return false;
+        return super.onDoubleTap(e);
+//        return false;
     }
-
-//    @Override
-//    public boolean onDoubleTapEvent(MotionEvent e) { Log.d(TAG, "onDoubleTapEvent"); return false; }
-//
-//    @Override
-//    public boolean onSingleTapConfirmed(MotionEvent e) { Log.d(TAG, "onSingleTapConfirmed"); return false; }
-    };
 
     @Override
-    public boolean onTouch(View v, MotionEvent event)
-    {
-        gestureDetector.onTouchEvent(event);
-
-        Log.d(TAG, "onTouch event: " + event);
-
-        return false;
+    public boolean onDoubleTapEvent(MotionEvent e){
+        Log.d(TAG, "onDoubleTapEvent");
+//        return false;
+        return super.onDoubleTapEvent(e);
     }
+
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent e) { Log.d(TAG, "onSingleTapConfirmed"); return false; }
+    };
+
+//    @Override
+//    public boolean onTouch(View v, MotionEvent event)
+//    {
+//        gestureDetector.onTouchEvent(event);
+//
+////        Log.d(TAG, "onTouch event: " + event);
+//
+//        return false;
+//    }
 
     // @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     private String getTopActivityPackageName()
